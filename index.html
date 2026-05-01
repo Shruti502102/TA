@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taskflow — Team Task Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #141417;
+      --surface2: #1c1c21;
+      --border: #2a2a32;
+      --accent: #e8ff47;
+      --accent2: #7c6fff;
+      --text: #f0f0f5;
+      --muted: #7a7a8c;
+      --danger: #ff4f4f;
+      --success: #4fffa0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 2.5rem;
+      background: rgba(13,13,15,0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; }
+    .logo span { color: var(--accent); }
+    nav ul { display: flex; gap: 2rem; list-style: none; }
+    nav ul a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color .2s; }
+    nav ul a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent); color: #000; font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 0.85rem; padding: 0.55rem 1.3rem;
+      border: none; border-radius: 6px; cursor: pointer; transition: opacity .2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* HERO */
+    .hero {
+      padding: 9rem 2.5rem 5rem;
+      max-width: 900px; margin: 0 auto; text-align: center;
+    }
+    .hero-badge {
+      display: inline-block; background: var(--surface2); border: 1px solid var(--border);
+      font-size: 0.75rem; font-weight: 500; color: var(--accent2);
+      padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1.6rem;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .hero h1 {
+      font-family: 'Syne', sans-serif; font-size: clamp(2.6rem, 6vw, 4.5rem);
+      font-weight: 800; line-height: 1.05; letter-spacing: -0.03em;
+      margin-bottom: 1.3rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero p { font-size: 1.1rem; color: var(--muted); max-width: 560px; margin: 0 auto 2.5rem; line-height: 1.7; }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent); color: #000; font-family: 'Syne', sans-serif;
+      font-weight: 700; padding: 0.85rem 2rem; border-radius: 8px;
+      border: none; cursor: pointer; font-size: 0.95rem; transition: transform .15s, opacity .15s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
+    .btn-ghost {
+      background: transparent; color: var(--text); border: 1px solid var(--border);
+      font-family: 'Syne', sans-serif; font-weight: 600; padding: 0.85rem 2rem;
+      border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: border-color .2s, background .2s;
+    }
+    .btn-ghost:hover { border-color: var(--muted); background: var(--surface); }
+
+    /* STATS */
+    .stats {
+      display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;
+      padding: 2.5rem 2.5rem 4rem; border-bottom: 1px solid var(--border);
+    }
+    .stat { text-align: center; }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--accent); }
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* APP PREVIEW */
+    .preview-section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.75rem; font-weight: 600; color: var(--accent2); text-transform: uppercase;
+      letter-spacing: 0.1em; margin-bottom: 0.7rem;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif; font-size: clamp(1.7rem, 3vw, 2.5rem);
+      font-weight: 800; letter-spacing: -0.02em; margin-bottom: 2rem;
+    }
+
+    /* KANBAN BOARD */
+    .board {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem; margin-top: 1rem;
+    }
+    .column { display: flex; flex-direction: column; gap: 0.7rem; }
+    .col-header {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-family: 'Syne', sans-serif; font-size: 0.8rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+      padding-bottom: 0.7rem; border-bottom: 1px solid var(--border);
+      margin-bottom: 0.3rem;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-todo { background: var(--muted); }
+    .dot-doing { background: var(--accent2); }
+    .dot-done { background: var(--success); }
+
+    .task-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.9rem 1rem;
+      transition: border-color .2s, transform .15s;
+      cursor: pointer;
+    }
+    .task-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+    .task-title { font-size: 0.88rem; font-weight: 500; margin-bottom: 0.6rem; line-height: 1.4; }
+    .task-meta { display: flex; align-items: center; justify-content: space-between; }
+    .task-tag {
+      font-size: 0.7rem; padding: 0.15rem 0.6rem; border-radius: 99px;
+      font-weight: 600; letter-spacing: 0.04em;
+    }
+    .tag-design { background: rgba(124,111,255,0.15); color: var(--accent2); }
+    .tag-dev { background: rgba(232,255,71,0.12); color: var(--accent); }
+    .tag-qa { background: rgba(79,255,160,0.12); color: var(--success); }
+    .tag-urgent { background: rgba(255,79,79,0.12); color: var(--danger); }
+    .avatars { display: flex; }
+    .avatar {
+      width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--surface2);
+      margin-left: -6px; font-size: 0.55rem; display: flex; align-items: center;
+      justify-content: center; font-weight: 700;
+    }
+    .av1 { background: #7c6fff; margin-left: 0; }
+    .av2 { background: #e8ff47; color: #000; }
+    .av3 { background: #ff6b6b; }
+    .av4 { background: #4fffa0; color: #000; }
+
+    /* FEATURES */
+    .features-section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.6rem;
+      transition: border-color .2s;
+    }
+    .feature-card:hover { border-color: var(--accent2); }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin-bottom: 1rem;
+    }
+    .ic1 { background: rgba(124,111,255,0.15); }
+    .ic2 { background: rgba(232,255,71,0.12); }
+    .ic3 { background: rgba(79,255,160,0.12); }
+    .ic4 { background: rgba(255,107,107,0.12); }
+    .feature-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feature-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+    /* TEAM MEMBERS */
+    .team-section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .members-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+    .member-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.2rem 1.4rem;
+      display: flex; align-items: center; gap: 1rem;
+      flex: 1; min-width: 200px;
+      transition: border-color .2s;
+    }
+    .member-card:hover { border-color: var(--accent); }
+    .member-av {
+      width: 42px; height: 42px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .member-name { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; }
+    .member-role { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+    .member-tasks { margin-left: auto; text-align: right; }
+    .member-tasks span { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--accent); display: block; }
+    .member-tasks small { font-size: 0.7rem; color: var(--muted); }
+
+    /* CTA */
+    .cta-section {
+      margin: 4rem 2rem 5rem; max-width: 800px; margin-left: auto; margin-right: auto;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 3.5rem 2rem; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(232,255,71,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 1rem; }
+    .cta-section p { color: var(--muted); margin-bottom: 2rem; font-size: 1rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border); padding: 2rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    footer .logo { font-size: 1.1rem; }
+    footer p { font-size: 0.8rem; color: var(--muted); }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px); z-index: 999; align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem; width: 100%; max-width: 420px;
+      animation: slideUp .2s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; margin-bottom: 1.4rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 0.4rem; font-weight: 500; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.7rem 0.9rem; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 0.88rem; outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent2); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group select option { background: var(--surface2); }
+    .modal-actions { display: flex; gap: 0.8rem; margin-top: 1.4rem; }
+    .modal-actions .btn-primary { flex: 1; }
+    .btn-cancel {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      padding: 0.7rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.88rem;
+      transition: border-color .2s;
+    }
+    .btn-cancel:hover { border-color: var(--muted); }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+      background: var(--success); color: #000;
+      padding: 0.9rem 1.5rem; border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem;
+      transform: translateY(100px); opacity: 0; transition: all .3s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 700px) {
+      nav ul { display: none; }
+      .board { grid-template-columns: 1fr; }
+      .stats { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Task<span>flow</span></div>
+  <ul>
+    <li><a href="#board">Board</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#team">Team</a></li>
+  </ul>
+  <button class="nav-cta" onclick="openModal()">+ New Task</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">✦ Team Productivity Reimagined</div>
+  <h1>Manage tasks,<br/><em>ship faster</em> together.</h1>
+  <p>A lightweight team task manager for modern teams. Assign, track, and close work in one unified place — no bloat, no noise.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="openModal()">Create your first task</button>
+    <button class="btn-ghost" onclick="document.getElementById('board').scrollIntoView({behavior:'smooth'})">See live board ↓</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-num" id="totalCount">4</div><div class="stat-label">Total Tasks</div></div>
+  <div class="stat"><div class="stat-num" id="doneCount">1</div><div class="stat-label">Completed</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Team Members</div></div>
+  <div class="stat"><div class="stat-num">98%</div><div class="stat-label">On-time Rate</div></div>
+</div>
+
+<!-- BOARD -->
+<section class="preview-section" id="board">
+  <div class="section-label">Live Board</div>
+  <div class="section-title">Your team's task board</div>
+
+  <div class="board">
+    <div class="column">
+      <div class="col-header"><span class="dot dot-todo"></span>Todo <span id="todoCount" style="color:var(--muted);font-weight:400;margin-left:auto">2</span></div>
+      <div id="todo-col"></div>
+    </div>
+    <div class="column">
+      <div class="col-header"><span class="dot dot-doing"></span>In Progress <span id="doingCount" style="color:var(--muted);font-weight:400;margin-left:auto">1</span></div>
+      <div id="doing-col"></div>
+    </div>
+    <div class="column">
+      <div class="col-header"><span class="dot dot-done"></span>Done <span id="doneColCount" style="color:var(--muted);font-weight:400;margin-left:auto">1</span></div>
+      <div id="done-col"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="section-label">Why Taskflow</div>
+  <div class="section-title">Everything your team needs</div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon ic1">📋</div>
+      <div class="feature-title">Kanban Board</div>
+      <div class="feature-desc">Visual drag-and-drop board. Move tasks across Todo, In Progress, and Done with ease.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon ic2">👥</div>
+      <div class="feature-title">Team Assignment</div>
+      <div class="feature-desc">Assign tasks to any team member. Everyone knows what they own and what's next.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon ic3">🏷️</div>
+      <div class="feature-title">Priority Tags</div>
+      <div class="feature-desc">Label tasks by type — Design, Dev, QA, Urgent — so nothing slips through the cracks.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon ic4">⚡</div>
+      <div class="feature-title">Zero Setup</div>
+      <div class="feature-desc">Single HTML file. Deploy to Railway in seconds — no build step, no database required.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="team-section" id="team">
+  <div class="section-label">Team</div>
+  <div class="section-title">Who's working on what</div>
+  <div class="members-row">
+    <div class="member-card">
+      <div class="member-av av1">AR</div>
+      <div><div class="member-name">Aryan R.</div><div class="member-role">Frontend Dev</div></div>
+      <div class="member-tasks"><span>3</span><small>tasks</small></div>
+    </div>
+    <div class="member-card">
+      <div class="member-av av2">SP</div>
+      <div><div class="member-name">Sanya P.</div><div class="member-role">UI Designer</div></div>
+      <div class="member-tasks"><span>2</span><small>tasks</small></div>
+    </div>
+    <div class="member-card">
+      <div class="member-av av3">KM</div>
+      <div><div class="member-name">Karan M.</div><div class="member-role">QA Lead</div></div>
+      <div class="member-tasks"><span>1</span><small>task</small></div>
+    </div>
+    <div class="member-card">
+      <div class="member-av av4">NJ</div>
+      <div><div class="member-name">Nisha J.</div><div class="member-role">Backend Dev</div></div>
+      <div class="member-tasks"><span>2</span><small>tasks</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Ready to ship faster?</h2>
+  <p>Add your first task and get your team aligned in minutes.</p>
+  <button class="btn-primary" onclick="openModal()">+ Add a task now</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">Task<span>flow</span></div>
+  <p>Built to deploy on Railway · Single file · Zero dependencies</p>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <h3>✦ New Task</h3>
+    <div class="form-group">
+      <label>Task Title</label>
+      <input type="text" id="taskTitle" placeholder="e.g. Design login page" />
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="taskDesc" placeholder="What needs to be done?"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Assignee</label>
+      <select id="taskAssignee">
+        <option value="AR">Aryan R. — Frontend</option>
+        <option value="SP">Sanya P. — Design</option>
+        <option value="KM">Karan M. — QA</option>
+        <option value="NJ">Nisha J. — Backend</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Tag</label>
+      <select id="taskTag">
+        <option value="dev">Dev</option>
+        <option value="design">Design</option>
+        <option value="qa">QA</option>
+        <option value="urgent">Urgent</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="taskStatus">
+        <option value="todo">Todo</option>
+        <option value="doing">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="addTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Task added to board!</div>
+
+<script>
+  const avColors = { AR: '#7c6fff', SP: '#e8ff47', KM: '#ff6b6b', NJ: '#4fffa0' };
+  const avTextColors = { SP: '#000', NJ: '#000' };
+
+  let tasks = [
+    { id: 1, title: 'Design new dashboard layout', tag: 'design', assignee: 'SP', status: 'todo' },
+    { id: 2, title: 'Fix API auth bug on login', tag: 'dev', assignee: 'NJ', status: 'doing' },
+    { id: 3, title: 'Write unit tests for cart module', tag: 'qa', assignee: 'KM', status: 'todo' },
+    { id: 4, title: 'Deploy staging environment', tag: 'dev', assignee: 'AR', status: 'done' },
+  ];
+
+  function tagClass(tag) {
+    return { design: 'tag-design', dev: 'tag-dev', qa: 'tag-qa', urgent: 'tag-urgent' }[tag] || 'tag-dev';
+  }
+  function tagLabel(tag) {
+    return { design: 'Design', dev: 'Dev', qa: 'QA', urgent: 'Urgent' }[tag] || tag;
+  }
+
+  function renderBoard() {
+    const cols = { todo: [], doing: [], done: [] };
+    tasks.forEach(t => cols[t.status].push(t));
+
+    ['todo', 'doing', 'done'].forEach(status => {
+      const el = document.getElementById(status === 'doing' ? 'doing-col' : status + '-col');
+      el.innerHTML = cols[status].map(t => `
+        <div class="task-card" onclick="cycleStatus(${t.id})">
+          <div class="task-title">${t.title}</div>
+          <div class="task-meta">
+            <span class="task-tag ${tagClass(t.tag)}">${tagLabel(t.tag)}</span>
+            <div class="avatars">
+              <div class="avatar" style="background:${avColors[t.assignee]||'#555'};color:${avTextColors[t.assignee]||'#fff'};margin-left:0">${t.assignee}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    });
+
+    document.getElementById('todoCount').textContent = cols.todo.length;
+    document.getElementById('doingCount').textContent = cols.doing.length;
+    document.getElementById('doneColCount').textContent = cols.done.length;
+    document.getElementById('totalCount').textContent = tasks.length;
+    document.getElementById('doneCount').textContent = cols.done.length;
+  }
+
+  function cycleStatus(id) {
+    const order = ['todo', 'doing', 'done'];
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    t.status = order[(order.indexOf(t.status) + 1) % order.length];
+    renderBoard();
+  }
+
+  function openModal() {
+    document.getElementById('taskModal').classList.add('active');
+    document.getElementById('taskTitle').focus();
+  }
+  function closeModal() {
+    document.getElementById('taskModal').classList.remove('active');
+  }
+  document.getElementById('taskModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  function addTask() {
+    const title = document.getElementById('taskTitle').value.trim();
+    if (!title) { document.getElementById('taskTitle').focus(); return; }
+    tasks.push({
+      id: Date.now(),
+      title,
+      tag: document.getElementById('taskTag').value,
+      assignee: document.getElementById('taskAssignee').value,
+      status: document.getElementById('taskStatus').value,
+    });
+    renderBoard();
+    closeModal();
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDesc').value = '';
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+    document.getElementById('board').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  renderBoard();
+</script>
+</body>
+</html>
